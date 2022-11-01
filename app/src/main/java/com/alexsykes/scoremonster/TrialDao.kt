@@ -17,6 +17,6 @@ interface TrialDao {
     @Query("DELETE FROM trials WHERE trialName = :name")
     fun deleteTrial(name: String)
 
-    @Query("SELECT * FROM trials")
+    @Query("SELECT * FROM trials ORDER BY trialName")
     fun getAllTrials(): LiveData<List<Trial>>
 }

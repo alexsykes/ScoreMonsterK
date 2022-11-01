@@ -125,6 +125,11 @@ fun MainScreen(
                 .padding(10.dp)
         ) {
             Button(onClick = {
+                if (trialClub.isNotEmpty() && trialName.isNotEmpty()) {
+                    viewModel.insertTrial(
+                        Trial(trialName, trialClub)
+                    )
+                }
 
             }) {
                 Text("Add")
@@ -166,7 +171,8 @@ fun MainScreen(
 
             items(list) {
                 trial ->
-                TrialRow(id = 2, name = trialName, club = trialClub)
+//                TrialRow(id = 2, name = trialName, trialClub = club)
+                TrialRow(id = trial.id, name = trial.trialName, club = trial.club)
             }
         }
     }
