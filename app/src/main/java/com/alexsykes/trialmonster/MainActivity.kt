@@ -1,7 +1,9 @@
-package com.alexsykes.scoremonster
+package com.alexsykes.trialmonster
 
 import android.app.Application
+import android.app.DownloadManager
 import android.os.Bundle
+import android.widget.DatePicker
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -33,18 +35,28 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.alexsykes.scoremonster.ui.theme.ScoreMonsterKTheme
+import com.alexsykes.trialmonster.ui.theme.ScoreMonsterKTheme
+import com.android.volley.Response
+import com.android.volley.Request
+import com.android.volley.RequestQueue
+import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.Volley
+import org.json.JSONException
 
 class MainActivity : ComponentActivity() {
+    private var requestQueue: RequestQueue? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        requestQueue = Volley.newRequestQueue(this)
+        jsonParse()
         setContent {
             ScoreMonsterKTheme {
                 // A surface container using the 'background' color from the theme
@@ -52,7 +64,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                   val owner = LocalViewModelStoreOwner.current
+                    val owner = LocalViewModelStoreOwner.current
 
                     owner?.let {
                         val viewModel: MainViewModel = viewModel(
@@ -60,7 +72,7 @@ class MainActivity : ComponentActivity() {
                             "MainViewModel",
                             MainViewModelFactory(
                                 LocalContext.current.applicationContext
-                            as Application )
+                                        as Application )
                         )
                         ScreenSetup(viewModel)
                     }
@@ -118,6 +130,7 @@ fun MainScreen(
             keyboardType = KeyboardType.Text
         )
 
+
         Row(
             horizontalArrangement = Arrangement.SpaceEvenly,
             modifier = Modifier
@@ -130,7 +143,6 @@ fun MainScreen(
                         Trial(trialName, trialClub)
                     )
                 }
-
             }) {
                 Text("Add")
             }
@@ -166,29 +178,26 @@ fun MainScreen(
             val list = if (searching) searchResults else allTrials
 
             item {
-                TitleRow(head1 = "ID", head2 = "Trial", head3 = "Club")
+                TitleRow( head2 = "Trial", head3 = "Club")
             }
 
             items(list) {
-                trial ->
+                    trial ->
 //                TrialRow(id = 2, name = trialName, trialClub = club)
-                TrialRow(id = trial.id, name = trial.trialName, club = trial.club)
+                TrialRow( name = trial.trialName, club = trial.club)
             }
         }
     }
 }
 
 @Composable
-fun TitleRow(head1: String, head2: String, head3: String) {
+fun TitleRow(  head2: String, head3: String) {
     Row(
         modifier = Modifier
             .background(MaterialTheme.colorScheme.primary)
             .fillMaxWidth()
             .padding(5.dp)
     ) {
-        Text(head1, color = Color.White,
-        modifier = Modifier
-            .weight(0.1f))
         Text(head2, color = Color.White,
             modifier = Modifier
                 .weight(0.2f))
@@ -199,14 +208,12 @@ fun TitleRow(head1: String, head2: String, head3: String) {
 }
 
 @Composable
-fun TrialRow(id: Int, name: String, club: String)  {
+fun TrialRow( name: String, club: String)  {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(5.dp)
     ) {
-        Text(id.toString(), modifier = Modifier
-            .weight(0.1f))
         Text(name, modifier = Modifier.weight(0.2f))
         Text(club, modifier = Modifier.weight(0.2f))
     }
@@ -224,24 +231,35 @@ fun CustomTextField(
         value = textState,
         onValueChange = { onTextChange(it) },
         keyboardOptions = KeyboardOptions(
-        keyboardType = keyboardType
-    ),
+            keyboardType = keyboardType
+        ),
         singleLine = true,
         label = { Text(title)},
         modifier = Modifier.padding(10.dp),
         textStyle = TextStyle(fontWeight = FontWeight.Bold,
-        fontSize = 30.sp )
-        )
+            fontSize = 16.sp )
+    )
 }
 
+private fun jsonParse() {
+    val  requestQueue: RequestQueue = RequestQueue(this)
+    val  url: String = "https://android.trialmonster.uk/getAndroidPastTrials.php"
+    val request = JsonObjectRequest(Request.Method.GET, url, null, {
+            response ->try {
+        val jsonArray = response.getJSONArray("employees")
+        for (i in 0 until jsonArray.length()) {
+            val employee = jsonArray.getJSONObject(i)
+            val firstName = employee.getString("firstname")
+            val age = employee.getInt("age")
+            val mail = employee.getString("mail")
+        }
+    } catch (e: JSONException) {
+        e.printStackTrace()
+    }
+    }, { error -> error.printStackTrace() })
+    requestQueue?.add(request)
+}
 
-//@Preview(showBackground = true)
-//@Composable
-//fun GreetingPreview() {
-//    ScoreMonsterKTheme {
-//        MainScreen()
-//    }
-//}
 
 class MainViewModelFactory(val application: Application) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {

@@ -1,4 +1,4 @@
-package com.alexsykes.scoremonster.ui.theme
+package com.alexsykes.trialmonster.ui.theme
 
 import android.app.Activity
 import android.os.Build

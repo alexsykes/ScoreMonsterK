@@ -1,4 +1,4 @@
-package com.alexsykes.scoremonster
+package com.alexsykes.trialmonster
 
 import android.content.Context
 import androidx.room.Database

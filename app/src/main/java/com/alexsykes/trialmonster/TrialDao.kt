@@ -1,4 +1,4 @@
-package com.alexsykes.scoremonster
+package com.alexsykes.trialmonster
 
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
